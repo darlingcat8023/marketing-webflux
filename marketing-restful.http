@@ -1,0 +1,107 @@
+// @no-log
+POST http://127.0.0.1:9000/api/admin/login
+Content-Type: application/json
+
+{"name": "admin", "password": "qmwqk2022"}
+
+###
+
+// @no-log
+GET http://127.0.0.1:9000/api/client/token/verify?source=2&token=djEKSHVhWWFvCjEsNjYwLDYzOSw5MjgsNDAyCmZjMC1iCmMyNDQ3Y2Y5YjQ5ZDVjNjM0OWIzYmZkYTA0ZDY2MTc1ZWY5ZTM0MTc3NzM5YzNkY2Q0MTU1NmIzOWQ3M2U3OWE=
+Content-Type: application/json
+
+###
+
+// @no-log
+GET http://togqmwqkht.goelfin.com/api/client/token/generate?source=2
+Content-Type: application/json
+
+###
+
+// @no-log
+POST http://127.0.0.1:9000/api/admin/org/save
+Content-Type: application/json
+
+{"id": 1, "name": "nwpwqdc123"}
+
+###
+
+// @no-log
+GET http://127.0.0.1:9000/api/admin/org/list
+Content-Type: application/json
+token: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJud3B3cWRjIiwidGltZVN0YW1wIjoxNjYwNTMwOTg2MDAzfQ.4BcF1DlX7PpPoVmPY9pldCFbFlO3vUawTql-UqyJfjo
+
+###
+
+// @no-log
+GET http://127.0.0.1:9000/api/admin/org/pull?token=eyJhbGciOiJIUzI1NiJ9.eyJ0aW1lU3RhbXAiOjE2NjA1NTQ4NTA0MTksInVzZXJJZCI6ImFkbWluIiwicGFzc3dvcmQiOiJxbXdxazIwMjIifQ.8JiSziygJxClksj0v_zfgKvEszf6wHw5Uk7K48SgtsY
+Content-Type: application/json
+
+###
+
+// @no-log
+POST http://127.0.0.1:9000/api/admin/account/check?organizationName=13
+Content-Type: application/json
+
+{"account": "1245555"}
+
+###
+
+// @no-log
+GET http://togqmwqkht.goelfin.com/api/admin/account/list
+Content-Type: application/json
+
+###
+
+// @no-log
+POST http://127.0.0.1:9000/api/admin/account/save
+Content-Type: application/json
+
+{
+  "account": "xjpdsb",
+  "password": "ppppppp111",
+  "accountName": "西猪头",
+  "businessName": "市场",
+  "organizationId": "1",
+  "organizationName": "nwpwq",
+  "bindDevice": 0,
+  "deviceId": "",
+  "orderNumber": "1234556",
+  "active": 0,
+  "activeTime": null
+}
+
+###
+
+// @no-log
+GET http://127.0.0.1:9000/api/admin/account/list?accountName=猪
+Content-Type: application/json
+
+###
+
+// @no-log
+GET http://127.0.0.1:9000/api/admin/log/list?account=2
+Content-Type: application/json
+token: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJud3B3cWRjIiwidGltZVN0YW1wIjoxNjYwNTMwOTg2MDAzfQ.4BcF1DlX7PpPoVmPY9pldCFbFlO3vUawTql-UqyJfjo
+
+###
+
+GET http://127.0.0.1:9000/api/admin/log/export
+
+###
+
+// @no-log
+POST http://127.0.0.1:9000/api/client/login
+Content-Type: application/json
+
+{"account": "xdf111", "password": "xxx111", "deviceId": "50d25cec621f0e867366a91fc2f271264fc9fe43ea0dc2739231b51bfe492449"}
+
+###
+
+// @no-log
+POST http://127.0.0.1:9000/api/client/check
+Content-Type: application/json
+
+{"token": "eyJhbGciOiJIUzI1NiJ9.eyJwYXNzd29yZCI6Inh4eDExMSIsImRldmljZSI6IjUwZDI1Y2VjNjIxZjBlODY3MzY2YTkxZmMyZjI3MTI2NGZjOWZlNDNlYTBkYzI3MzkyMzFiNTFiZmU0OTI0NDkiLCJhY2NvdW50IjoieGRmMTExIn0.1ho9RwWjirX9_S76P_4ANdVHRgNi6ugzHWY1N6Xrk08", "deviceId": "50d25cec621f0e867366a91fc2f271264fc9fe43ea0dc2739231b51bfe492449"}
+
+###

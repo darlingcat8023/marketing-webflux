@@ -1,0 +1,31 @@
+server:
+  port: 9000
+
+spring:
+  r2dbc:
+    url: "r2dbc:mysql://10.18.21.173:3306/marketing_ai_course?useUnicode=true&characterEncoding=UTF-8&useSSL=false"
+    username: "marketing_ai_course"
+    password: "Qn2574mdkM5CxJxd"
+    pool:
+      enabled: true
+      max-size: 30
+      initial-size: 10
+      validation-query: "select 1"
+      max-idle-time: 300m
+      max-acquire-time: 3s
+      max-create-connection-time: 5s
+
+admin:
+  name: "admin"
+  password: "qmwqk2022"
+
+provider:
+  honghe:
+    appid: "8000061"
+    secret: "b3a65f5325990ccffb55a6d3071856cf"
+
+logging:
+  level:
+    org.springframework.http.codec.json.Jackson2JsonDecoder: trace
+    org.springframework.core.codec.CharSequenceEncoder: trace
+
