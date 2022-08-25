@@ -32,9 +32,7 @@ public class OrganizationService {
     public Mono<Integer> saveOrganization(Mono<OrganizationSaveRequest> requestMono) {
         return requestMono.map(this::convertEntity)
                 .flatMap(this.organizationRepository::save)
-                .flatMap(entity -> this.accountRepository.updateAccountOrganization(entity.id(), entity.name())
-                        .map(model -> entity.id())
-                );
+                .flatMap(entity -> this.accountRepository.updateAccountOrganization(entity.id(), entity.name()).map(model -> entity.id()));
     }
 
     public Mono<Page<OrganizationListResponse>> pageOrganization(String name, Pageable pageable) {

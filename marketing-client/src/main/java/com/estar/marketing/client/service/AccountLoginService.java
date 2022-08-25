@@ -33,7 +33,7 @@ public class AccountLoginService {
     @Transactional(rollbackFor = {Exception.class})
     public Mono<String> accountLogin(Mono<AccountLoginRequest> requestMono) {
         return requestMono.flatMap(request -> this.accountRepository.findByAccountAndPassword(request.account(), request.password())
-                .switchIfEmpty(Mono.defer(() -> Mono.error(() -> new BusinessException("用户名或密码错误"))))
+                .switchIfEmpty(Mono.error(() -> new BusinessException("用户名或密码错误")))
                 .doOnNext(entity -> {
                     if (entity.active().equals(1)) {
                         throw new BusinessException("账户已停用");
@@ -65,7 +65,7 @@ public class AccountLoginService {
     public Mono<String> checkAccount(Mono<ClientCheckRequest> requestMono) {
         return requestMono.map(this::parseClientToken)
                 .flatMap(item -> this.accountRepository.findByAccountAndPassword(item.account(), item.password())
-                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException("用户名或密码异常"))))
+                        .switchIfEmpty(Mono.error(() -> new BusinessException("用户名或密码异常")))
                         .doOnNext(entity -> {
                             if (entity.active().equals(1)) {
                                 throw new BusinessException("账户已停用");

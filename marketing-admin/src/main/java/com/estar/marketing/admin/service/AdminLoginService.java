@@ -21,7 +21,7 @@ public class AdminLoginService {
 
     public Mono<String> adminLoginService(Mono<AdminLoginRequest> requestMono) {
         return requestMono.filter(request -> request.equals(this.rootUser))
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException("用户名或密码错误"))))
+                .switchIfEmpty(Mono.error(() -> new BusinessException("用户名或密码错误")))
                 .flatMap(request -> this.authService.buildToken(map -> {
                     map.put("userId", request.name());
                     map.put("password", request.password());

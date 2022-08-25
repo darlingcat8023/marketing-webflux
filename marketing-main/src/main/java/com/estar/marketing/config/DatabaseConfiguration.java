@@ -23,7 +23,7 @@ public class DatabaseConfiguration {
      */
     @Bean
     public NamingStrategy namingStrategy() {
-        return new NamingStrategy() {};
+        return NamingStrategy.INSTANCE;
     }
 
 }

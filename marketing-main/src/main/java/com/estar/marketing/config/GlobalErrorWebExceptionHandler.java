@@ -50,7 +50,7 @@ public class GlobalErrorWebExceptionHandler extends AbstractErrorWebExceptionHan
     @Override
     protected RouterFunction<ServerResponse> getRoutingFunction(ErrorAttributes errorAttributes) {
         HandlerFunction<ServerResponse> handlerFunction = request -> {
-            var error = errorAttributes.getError(request);
+            final var error = errorAttributes.getError(request);
             Supplier<String> supplier = () -> {
                 log.error("未知异常", error);
                 return error.getMessage();

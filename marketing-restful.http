@@ -7,13 +7,13 @@ Content-Type: application/json
 ###
 
 // @no-log
-GET http://127.0.0.1:9000/api/client/token/verify?source=2&token=djEKSHVhWWFvCjEsNjYwLDYzOSw5MjgsNDAyCmZjMC1iCmMyNDQ3Y2Y5YjQ5ZDVjNjM0OWIzYmZkYTA0ZDY2MTc1ZWY5ZTM0MTc3NzM5YzNkY2Q0MTU1NmIzOWQ3M2U3OWE=
+GET http://127.0.0.1:9000/api/client/token/verify?source=3&token=djEKRG9uZ0ZhbmcKMSw2NjEsMjQxLDY2NSw3MTMKMWUzLTIKZWQxMDUzMTZlMmRjZTMxYzY4YWI4NjJjYTg5YjQyOGE3YmFmN2FhNjg1YTk5YjIxNmQ3NjVhMWRkODA4NGY3MQ==
 Content-Type: application/json
 
 ###
 
 // @no-log
-GET http://togqmwqkht.goelfin.com/api/client/token/generate?source=2
+GET http://127.0.0.1:9000/api/client/token/generate?source=3
 Content-Type: application/json
 
 ###

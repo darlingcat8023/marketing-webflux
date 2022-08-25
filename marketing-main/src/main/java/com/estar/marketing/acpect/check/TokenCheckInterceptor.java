@@ -11,6 +11,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
@@ -48,17 +49,24 @@ public class TokenCheckInterceptor implements MethodInterceptor {
         Function<String, Mono<ServerWebExchange>> holdFunction = user -> ReactiveContextHolder.getServerWebExchange().
                     doOnNext(exchange -> exchange.getAttributes().put("userId", user));
         // 调用目标方法
-        Function<ServerWebExchange, Mono<Object>> invokeFunction = context -> {
+        Function<ServerWebExchange, Mono<?>> invokeMonoFunction = context -> {
             try {
-                return (Mono<Object>) invocation.proceed();
+                return (Mono) invocation.proceed();
             } catch (Throwable e) {
                 return Mono.error(e);
             }
         };
-        return ReactiveContextHolder.getServerWebExchange()
+        Function<ServerWebExchange, Flux<?>> invokeFluxFunction = context -> {
+            try {
+                return (Flux) invocation.proceed();
+            } catch (Throwable e) {
+                return Flux.error(e);
+            }
+        };
+        var serverWebExchangeMono = ReactiveContextHolder.getServerWebExchange()
                 .flatMap(parseFunction)
-                .flatMap(holdFunction)
-                .flatMap(invokeFunction);
+                .flatMap(holdFunction);
+        return invocation.getMethod().getReturnType().isAssignableFrom(Mono.class) ? serverWebExchangeMono.flatMap(invokeMonoFunction) : serverWebExchangeMono.flatMapMany(invokeFluxFunction);
     }
 
     private String getTokenFromRequest(ServerHttpRequest serverRequest) {
