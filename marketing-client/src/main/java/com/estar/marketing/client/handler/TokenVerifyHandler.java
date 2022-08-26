@@ -34,7 +34,7 @@ public class TokenVerifyHandler {
                 .orElseThrow(() -> new BusinessException("unknown source"));
         var token = request.queryParam("token").filter(StringUtils::hasText)
                 .orElseThrow(() -> new BusinessException("unknown token"));
-        var ret = this.tokenVerifyService.verify(Mono.just(new TokenVerifyRequest(source, token)).log(), RequestUtils.getActualAddress(request));
+        var ret = this.tokenVerifyService.verify(new TokenVerifyRequest(source, token), RequestUtils.getActualAddress(request));
         return ServerResponse.ok().body(ret, String.class);
     }
 

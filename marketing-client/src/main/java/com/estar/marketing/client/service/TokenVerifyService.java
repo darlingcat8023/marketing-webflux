@@ -25,15 +25,14 @@ public class TokenVerifyService {
         return TokenStrategy.create(this.applicationContext, source).generateToken();
     }
 
-    public Mono<String> verify(Mono<TokenVerifyRequest> requestMono, String remoteAddress) {
-        return requestMono.flatMap(request -> TokenStrategy.create(this.applicationContext, request.source()).parseToken(request.token()))
+    public Mono<String> verify(TokenVerifyRequest request, String remoteAddress) {
+        return TokenStrategy.create(this.applicationContext, request.source()).parseToken(request.token())
                 .doOnNext(bool -> {
                     if (!bool) {
                         throw new BusinessException("token not valid");
                     }
                 })
-                .then(requestMono)
-                .flatMap(request -> this.tokenverifyRepository.findFirstByToken(request.token())
+                .then(this.tokenverifyRepository.findFirstByToken(request.token())
                         .switchIfEmpty(this.tokenverifyRepository.save(this.convertTokenVerifyEntity(request, remoteAddress)))
                 )
                 .doOnNext(entity -> {
