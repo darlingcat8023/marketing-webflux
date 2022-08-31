@@ -13,7 +13,7 @@ Content-Type: application/json
 ###
 
 // @no-log
-GET http://127.0.0.1:9000/api/client/token/generate?source=3
+GET http://togqmwqkht.goelfin.com/api/client/token/generate?source=4
 Content-Type: application/json
 
 ###
