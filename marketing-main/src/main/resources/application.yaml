@@ -3,9 +3,9 @@ server:
 
 spring:
   r2dbc:
-    url: "r2dbc:mysql://10.18.21.173:3306/marketing_ai_course?useUnicode=true&characterEncoding=UTF-8&useSSL=false"
-    username: "marketing_ai_course"
-    password: "Qn2574mdkM5CxJxd"
+    url:
+    username:
+    password:
     pool:
       enabled: true
       max-size: 30
