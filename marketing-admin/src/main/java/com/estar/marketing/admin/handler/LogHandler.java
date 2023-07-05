@@ -42,12 +42,12 @@ public class LogHandler {
     }
 
     private LogListRequest buildRequest(ServerRequest request) {
-        var account = request.queryParam("account").orElse(null);
-        var organizationId = request.queryParam("organizationId").filter(StringUtils::hasText)
-                .map(Integer::parseInt).orElse(null);
-        var startTime = request.queryParam("startTime").orElse(null);
-        var endTime = request.queryParam("endTime").orElse(null);
-        return new LogListRequest(account, organizationId, startTime, endTime);
+        var query = new LogListRequest();
+        request.queryParam("account").ifPresent(query::setAccount);
+        request.queryParam("organizationId").filter(StringUtils::hasText).map(Integer::parseInt).ifPresent(query::setOrganizationId);
+        request.queryParam("startTime").ifPresent(query::setStartTime);
+        request.queryParam("endTime").ifPresent(query::setEndTime);
+        return query;
     }
 
 }

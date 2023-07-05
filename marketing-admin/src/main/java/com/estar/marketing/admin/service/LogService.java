@@ -55,17 +55,17 @@ public class LogService {
 
     private Query buildQuery(LogListRequest request) {
         var criteria = Criteria.empty();
-        if (StringUtils.hasText(request.account())) {
-            criteria = criteria.and(Criteria.where("account").like("%" + request.account() + "%"));
+        if (StringUtils.hasText(request.getAccount())) {
+            criteria = criteria.and(Criteria.where("account").like("%" + request.getAccount() + "%"));
         }
-        if (request.organizationId() != null) {
-            criteria = criteria.and(Criteria.where("organization_id").is(request.organizationId()));
+        if (request.getOrganizationId() != null) {
+            criteria = criteria.and(Criteria.where("organization_id").is(request.getOrganizationId()));
         }
-        if (StringUtils.hasText(request.startTime())) {
-            criteria = criteria.and(Criteria.where("login_at").greaterThanOrEquals(request.startTime()));
+        if (StringUtils.hasText(request.getStartTime())) {
+            criteria = criteria.and(Criteria.where("login_at").greaterThanOrEquals(request.getStartTime()));
         }
-        if (StringUtils.hasText(request.endTime())) {
-            criteria = criteria.and(Criteria.where("login_at").lessThanOrEquals(request.endTime()));
+        if (StringUtils.hasText(request.getEndTime())) {
+            criteria = criteria.and(Criteria.where("login_at").lessThanOrEquals(request.getEndTime()));
         }
         return Query.query(criteria);
     }

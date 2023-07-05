@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -77,6 +78,17 @@ public class AdminRouterFunctionConfiguration {
                             requestBody = @RequestBody(required = true, content = @Content(schema = @Schema(implementation = AccountSaveRequest.class))),
                             responses = {
                                     @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(schema = @Schema(implementation = Integer.class))),
+                                    @ApiResponse(responseCode = "400", description = "fail operation", content = @Content(schema = @Schema(implementation = String.class))),
+                                    @ApiResponse(responseCode = "403", description = "forbidden operation", content = @Content(schema = @Schema(implementation = String.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(method = POST, path = "/api/admin/account/import", produces = MediaType.MULTIPART_FORM_DATA_VALUE, beanClass = AccountHandler.class, beanMethod = "importFile",
+                    operation = @Operation(
+                            operationId = "importFile",
+                            description = "导入用户",
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(schema = @Schema(implementation = String.class))),
                                     @ApiResponse(responseCode = "400", description = "fail operation", content = @Content(schema = @Schema(implementation = String.class))),
                                     @ApiResponse(responseCode = "403", description = "forbidden operation", content = @Content(schema = @Schema(implementation = String.class)))
                             }
@@ -137,6 +149,7 @@ public class AdminRouterFunctionConfiguration {
         Supplier<RouterFunction<ServerResponse>> supplier = () -> RouterFunctions.route()
                 .POST("/check", RequestPredicates.contentType(APPLICATION_JSON), accountHandle::check)
                 .POST("/save", RequestPredicates.contentType(APPLICATION_JSON), accountHandle::save)
+                .POST("/import", RequestPredicates.contentType(MULTIPART_FORM_DATA), accountHandle::importFile)
                 .GET("/list", accountHandle::list)
                 .GET("/export", accountHandle::export)
                 .POST("/reset", RequestPredicates.contentType(APPLICATION_JSON), accountHandle::reset)

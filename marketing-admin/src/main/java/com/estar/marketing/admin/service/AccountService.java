@@ -9,6 +9,7 @@ import com.estar.marketing.admin.model.request.AccountListRequest;
 import com.estar.marketing.admin.model.request.AccountResetRequest;
 import com.estar.marketing.admin.model.request.AccountSaveRequest;
 import com.estar.marketing.admin.model.response.AccountListResponse;
+import com.estar.marketing.admin.utils.EasyExcelUtils;
 import com.estar.marketing.base.ByteArrayInOutStream;
 import com.estar.marketing.base.exception.BusinessException;
 import lombok.AllArgsConstructor;
@@ -16,11 +17,19 @@ import lombok.Data;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.*;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.time.LocalDateTime;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.function.Supplier;
 
 /**
  * @author xiaowenrou
@@ -32,33 +41,41 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
 
-    public Mono<Boolean> checkAccount(Mono<AccountCheckRequest> requestMono) {
-        Function<AccountEntity, Example<AccountEntity>> function = entity -> Example.of(entity, ExampleMatcher.matching().withIgnoreNullValues());
-        return requestMono.map(function.compose(AccountCheckRequest::convertEntity))
-                .flatMap(this.accountRepository::exists);
+    public Mono<Boolean> checkAccount(AccountCheckRequest request) {
+        return this.accountRepository.exists(Example.of(request.convertEntity(), ExampleMatcher.matching().withIgnoreNullValues()));
     }
 
-    public Mono<Integer> saveAccount(Mono<AccountSaveRequest> requestMono) {
-        return requestMono.map(AccountSaveRequest::convertEntity)
-                .flatMap(request -> this.accountRepository.findByAccount(request.account())
-                        .doOnNext(model -> {
-                            if (request.id() == null || !model.id().equals(request.id())) {
-                                throw new BusinessException("account已经存在");
-                            }
-                        })
-                        .then(this.accountRepository.save(request))
-                        .map(AccountEntity::id)
-                );
+    @Transactional(rollbackFor = {Exception.class})
+    public Mono<Integer> saveAccount(AccountSaveRequest request) {
+        var ent = request.convertEntity();
+        var accountCheck = this.accountRepository.findByAccount(ent.account()).flatMap(model -> ent.id() == null || !model.id().equals(ent.id()) ? Mono.error(() -> new BusinessException("account exists: " + model.account())) : Mono.empty());
+        var mobileCheck = Mono.empty();
+        if (StringUtils.hasText(ent.mobile())) {
+            mobileCheck = this.accountRepository.findByMobile(ent.mobile()).flatMap(model -> ent.id() == null || !model.id().equals(ent.id()) ? Mono.error(() -> new BusinessException("mobile exists: " + model.mobile())) : Mono.empty());
+        }
+        return accountCheck.then(mobileCheck).then(this.accountRepository.save(ent)).map(AccountEntity::id);
+    }
+
+    @Transactional(rollbackFor = {Exception.class})
+    public Mono<String> importAccount(FilePart part) {
+        Supplier<InputStream> supplier = () -> new InputStream() {
+            @Override
+            public int read() throws IOException { return -1;}
+        };
+        return part.content().reduceWith(supplier, (input, buffer) -> new SequenceInputStream(input, buffer.asInputStream()))
+                .flatMapMany(stream -> EasyExcelUtils.read(stream, AccountImportBean.class, 0)).map(AccountImportBean::convert)
+                .flatMap(this::saveAccount).then(Mono.just("success"));
     }
 
     public Mono<Page<AccountListResponse>> pageAccount(AccountListRequest query, Pageable pageable) {
         var order = Sort.by("id").descending();
-        return this.accountRepository.findBy(this.buildQueryExample(query), fluent -> fluent.as(AccountListResponse.class).sortBy(order).page(pageable)).log();
+        return this.accountRepository.findBy(query.buildExample(), fluent -> fluent.sortBy(order).page(pageable))
+                .map(page -> page.map(AccountListResponse::new)).log();
     }
 
     public Mono<Resource> exportAccount(AccountListRequest query) {
         var order = Sort.by("id").ascending();
-        return this.accountRepository.findBy(this.buildQueryExample(query), fluent -> fluent.as(AccountExportBean.class).sortBy(order).all()).log()
+        return this.accountRepository.findBy(query.buildExample(), fluent -> fluent.as(AccountExportBean.class).sortBy(order).all()).log()
                 .collectList().flatMap(list -> {
                     var stream = new ByteArrayInOutStream();
                     EasyExcel.write(stream, AccountExportBean.class).sheet("用户信息").doWrite(list);
@@ -66,17 +83,41 @@ public class AccountService {
                 });
     }
 
-    public Mono<Boolean> resetAccount(Mono<AccountResetRequest> requestMono) {
-        return requestMono.flatMap(request -> this.accountRepository.resetAccount(request.account(), request.password()))
-                .map(account -> account.equals(1));
+    public Mono<Boolean> resetAccount(AccountResetRequest request) {
+        return this.accountRepository.resetAccount(request.account(), request.password()).map(account -> account.equals(1));
     }
 
-    private Example<AccountEntity> buildQueryExample(AccountListRequest query) {
-        return Example.of(query.convertEntity(), ExampleMatcher.matching()
-                .withMatcher("account", ExampleMatcher.GenericPropertyMatchers.contains())
-                .withMatcher("accountName", ExampleMatcher.GenericPropertyMatchers.contains())
-                .withMatcher("orderNumber", ExampleMatcher.GenericPropertyMatchers.contains())
-                .withIgnoreNullValues());
+    @Data
+    public static class AccountImportBean {
+        @ExcelProperty(index = 0)
+        private String businessName;
+        @ExcelProperty(index = 1)
+        private String orderNumber;
+        @ExcelProperty(index = 2)
+        private String organizationName;
+        @ExcelProperty(index = 3)
+        private Integer organizationId;
+        @ExcelProperty(index = 4)
+        private String type;
+        @ExcelProperty(index = 5)
+        private String accesses;
+        @ExcelProperty(index = 6)
+        private String account;
+        @ExcelProperty(index = 7)
+        private String accountName;
+        @ExcelProperty(index = 8)
+        private String mobile;
+        @ExcelProperty(index = 9)
+        private String password;
+
+        public AccountSaveRequest convert() {
+            var accessList = new ArrayList<Integer>();
+            if (StringUtils.hasText(this.accesses)) {
+                Arrays.stream(this.accesses.split(",")).map(Integer::parseInt).forEach(accessList::add);
+            }
+            return new AccountSaveRequest(null, this.account, this.mobile, this.password, this.accountName, this.businessName, this.organizationId, this.organizationName,
+                    0, null, this.orderNumber, 0, this.type, accessList);
+        }
     }
 
     @Data

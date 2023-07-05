@@ -1,6 +1,7 @@
 package com.estar.marketing.base.utils;
 
 import com.estar.marketing.base.exception.BusinessException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -15,6 +16,7 @@ import java.util.stream.Stream;
  * @author xiaowenrou
  * @data 2022/7/29
  */
+@Slf4j
 public abstract class RequestUtils {
 
     /**
@@ -24,8 +26,10 @@ public abstract class RequestUtils {
      */
     public static String getActualAddress(final ServerRequest request) {
         var headers = request.headers();
+        headers.asHttpHeaders().forEach((k,v) -> log.info("http headers key = {} value = {}", k, v));
         var ip = "";
         Stream<Supplier<String>> stream = Stream.of(
+                () -> headers.firstHeader("Ali-Cdn-Real-Ip"),
                 () -> headers.firstHeader("X-Forwarded-For"),
                 () -> headers.firstHeader("Proxy-Client-IP"),
                 () -> request.remoteAddress()

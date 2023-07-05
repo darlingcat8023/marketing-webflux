@@ -27,6 +27,8 @@ public record AccountEntity(
 
         String account,
 
+        String mobile,
+
         String password,
 
         String accountName,
@@ -45,6 +47,10 @@ public record AccountEntity(
 
         Integer active,
 
-        LocalDateTime activeTime
+        LocalDateTime activeTime,
+
+        String type,
+
+        String access
 
 ) {}

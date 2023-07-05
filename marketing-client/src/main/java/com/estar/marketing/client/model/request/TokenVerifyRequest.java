@@ -5,6 +5,6 @@ package com.estar.marketing.client.model.request;
  * @data 2022/8/2
  */
 public record TokenVerifyRequest(
-        Integer source,
+        String source,
         String token
 ) {}

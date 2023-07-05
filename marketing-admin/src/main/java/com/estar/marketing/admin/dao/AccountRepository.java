@@ -19,6 +19,8 @@ public interface AccountRepository extends R2dbcRepository<AccountEntity, Intege
      */
     Mono<AccountEntity> findByAccount(String account);
 
+    Mono<AccountEntity> findByMobile(String mobile);
+
     /**
      * 根据用户名和密码查找
      * @param account
@@ -26,6 +28,14 @@ public interface AccountRepository extends R2dbcRepository<AccountEntity, Intege
      * @return
      */
     Mono<AccountEntity> findByAccountAndPassword(String account, String password);
+
+    /**
+     * 根据手机号密码查找
+     * @param mobile
+     * @param password
+     * @return
+     */
+    Mono<AccountEntity> findByMobileAndPassword(String mobile, String password);
 
     /**
      * 重置密码
@@ -36,6 +46,16 @@ public interface AccountRepository extends R2dbcRepository<AccountEntity, Intege
     @Modifying
     @Query(value = "UPDATE marketing_account SET password = :password WHERE account = :account")
     Mono<Integer> resetAccount(String account, String password);
+
+    /**
+     * 重置密码
+     * @param mobile
+     * @param password
+     * @return
+     */
+    @Modifying
+    @Query(value = "UPDATE marketing_account SET password = :password WHERE mobile = :mobile")
+    Mono<Integer> resetAccountByMobile(String mobile, String password);
 
     /**
      * 更新组织架构

@@ -1,5 +1,5 @@
 // @no-log
-POST http://127.0.0.1:9000/api/admin/login
+POST http://togqmwqkht.goelfin.com/api/admin/login
 Content-Type: application/json
 
 {"name": "admin", "password": "qmwqk2022"}
@@ -7,13 +7,13 @@ Content-Type: application/json
 ###
 
 // @no-log
-GET http://127.0.0.1:9000/api/client/token/verify?source=3&token=djEKRG9uZ0ZhbmcKMSw2NjEsMjQxLDY2NSw3MTMKMWUzLTIKZWQxMDUzMTZlMmRjZTMxYzY4YWI4NjJjYTg5YjQyOGE3YmFmN2FhNjg1YTk5YjIxNmQ3NjVhMWRkODA4NGY3MQ==
+GET https://togqmwqkht.goelfin.com/api/client/token/verify?source=rmzk&token=djEKUmVuTWluWmhpS2UKMSw2NjIsNDQ5LDIyOSw3NDMKMjlkLTYKMjA2MTdkOGEyZDhiYWQ3NGE4ZDEwMjRkNzk2NGQ2MTJiNzZjYTAxMGQ4MTIyN2E0NDZlZjAzNDUyY2E4ZmNhNg==
 Content-Type: application/json
 
 ###
 
 // @no-log
-GET http://togqmwqkht.goelfin.com/api/client/token/generate?source=4
+GET https://togqmwqkht.goelfin.com/api/client/token/generate?source=rmzk
 Content-Type: application/json
 
 ###
@@ -54,13 +54,15 @@ Content-Type: application/json
 ###
 
 // @no-log
-POST http://127.0.0.1:9000/api/admin/account/save
+POST http://localhost:9000/api/admin/account/save
 Content-Type: application/json
+token: eyJhbGciOiJIUzI1NiJ9.eyJ0aW1lU3RhbXAiOjE2ODIyMzY1NjA1OTEsInVzZXJJZCI6ImFkbWluIiwicGFzc3dvcmQiOiJxbXdxazIwMjIifQ.bZqeKArOcGtPbLLtk05pUC8YtbGT_DBmmbqs_SEjZ7g
 
 {
-  "account": "xjpdsb",
-  "password": "ppppppp111",
-  "accountName": "西猪头",
+  "account": "18701572634",
+  "mobile": "18701572634",
+  "password": "www123",
+  "accountName": "武雨萱",
   "businessName": "市场",
   "organizationId": "1",
   "organizationName": "nwpwq",
@@ -68,14 +70,17 @@ Content-Type: application/json
   "deviceId": "",
   "orderNumber": "1234556",
   "active": 0,
-  "activeTime": null
+  "activeTime": null,
+  "type": "",
+  "accesses": [1,2]
 }
 
 ###
 
 // @no-log
-GET http://127.0.0.1:9000/api/admin/account/list?accountName=猪
+GET http://127.0.0.1:9000/api/admin/account/list?accountName=武
 Content-Type: application/json
+token: eyJhbGciOiJIUzI1NiJ9.eyJ0aW1lU3RhbXAiOjE2ODE0Njg3Mzg4NjMsInVzZXJJZCI6ImFkbWluIiwicGFzc3dvcmQiOiJxbXdxazIwMjIifQ.dBBWx0-wQPfuvxr3XFA3pkAG7XpFAvf-3_ixTw0K7e0
 
 ###
 
@@ -105,3 +110,30 @@ Content-Type: application/json
 {"token": "eyJhbGciOiJIUzI1NiJ9.eyJwYXNzd29yZCI6Inh4eDExMSIsImRldmljZSI6IjUwZDI1Y2VjNjIxZjBlODY3MzY2YTkxZmMyZjI3MTI2NGZjOWZlNDNlYTBkYzI3MzkyMzFiNTFiZmU0OTI0NDkiLCJhY2NvdW50IjoieGRmMTExIn0.1ho9RwWjirX9_S76P_4ANdVHRgNi6ugzHWY1N6Xrk08", "deviceId": "50d25cec621f0e867366a91fc2f271264fc9fe43ea0dc2739231b51bfe492449"}
 
 ###
+
+GET http://togqmwqkht.goelfin.com/api/client/reset/send?mobile=18643921237
+
+###
+
+POST http://togqmwqkht.goelfin.com/api/client/reset/commit
+Content-Type: application/json
+
+{
+  "code": "032231",
+  "mobile": "18643921237",
+  "password": "xjpdsb"
+}
+
+###
+
+POST http://127.0.0.1:9000/api/admin/account/import
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+token: eyJhbGciOiJIUzI1NiJ9.eyJ0aW1lU3RhbXAiOjE2ODIyMzY1NjA1OTEsInVzZXJJZCI6ImFkbWluIiwicGFzc3dvcmQiOiJxbXdxazIwMjIifQ.bZqeKArOcGtPbLLtk05pUC8YtbGT_DBmmbqs_SEjZ7g
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="template.xlsx"
+Content-Type: application/octet-stream
+
+< /Users/xiaowenrou/Downloads/template.xlsx
+--WebAppBoundary--
+

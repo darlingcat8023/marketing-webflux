@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -39,13 +40,18 @@ public class AccountHandler {
     public Mono<ServerResponse> check(ServerRequest request) {
         var requestMono = request.bodyToMono(AccountCheckRequest.class).log()
                 .doOnNext(req -> ValidatorUtils.valid(this.validator, req));
-        return ServerResponse.ok().body(this.accountService.checkAccount(requestMono), Boolean.class);
+        return ServerResponse.ok().body(requestMono.flatMap(this.accountService::checkAccount), Boolean.class);
     }
 
     public Mono<ServerResponse> save(ServerRequest request) {
         var requestMono = request.bodyToMono(AccountSaveRequest.class).log()
                 .doOnNext(req -> ValidatorUtils.valid(this.validator, req));
-        return ServerResponse.ok().body(this.accountService.saveAccount(requestMono), Integer.class);
+        return ServerResponse.ok().body(requestMono.flatMap(this.accountService::saveAccount), Integer.class);
+    }
+
+    public Mono<ServerResponse> importFile(ServerRequest request) {
+        var requestMono = request.multipartData().mapNotNull(map -> map.getFirst("file")).cast(FilePart.class);
+        return ServerResponse.ok().body(requestMono.flatMap(this.accountService::importAccount), String.class);
     }
 
     public Mono<ServerResponse> list(ServerRequest request) {
@@ -55,8 +61,7 @@ public class AccountHandler {
     }
 
     public Mono<ServerResponse> export(ServerRequest request) {
-        return ServerResponse.ok()
-                .header(CONTENT_TYPE, APPLICATION_OCTET_STREAM_VALUE)
+        return ServerResponse.ok().header(CONTENT_TYPE, APPLICATION_OCTET_STREAM_VALUE)
                 .header(CONTENT_DISPOSITION,  "attachment;filename=" + System.currentTimeMillis() + ".xlsx")
                 .body(this.accountService.exportAccount(this.buildRequestModel(request)), Resource.class);
     }
@@ -64,19 +69,18 @@ public class AccountHandler {
     public Mono<ServerResponse> reset(ServerRequest request) {
         var requestMono = request.bodyToMono(AccountResetRequest.class).log()
                 .doOnNext(req -> ValidatorUtils.valid(this.validator, req));
-        return ServerResponse.ok().body(this.accountService.resetAccount(requestMono), Boolean.class);
+        return ServerResponse.ok().body(requestMono.flatMap(this.accountService::resetAccount), Boolean.class);
     }
 
     private AccountListRequest buildRequestModel(ServerRequest request){
-        var account = request.queryParam("account").orElse(null);
-        var accountName = request.queryParam("accountName").orElse(null);
-        var businessName = request.queryParam("businessName").orElse(null);
-        var organizationId = request.queryParam("organizationId").filter(StringUtils::hasText)
-                .map(Integer::parseInt).orElse(null);
-        var orderNumber = request.queryParam("orderNumber").orElse(null);
-        var active = request.queryParam("active").filter(StringUtils::hasText)
-                .map(Integer::parseInt).orElse(null);
-        return new AccountListRequest(account, accountName, businessName, organizationId, orderNumber, active);
+        var query = new AccountListRequest();
+        request.queryParam("account").ifPresent(query::setAccount);
+        request.queryParam("accountName").ifPresent(query::setAccountName);
+        request.queryParam("businessName").ifPresent(query::setBusinessName);
+        request.queryParam("organizationId").filter(StringUtils::hasText).map(Integer::parseInt).ifPresent(query::setOrganizationId);
+        request.queryParam("orderNumber").ifPresent(query::setOrderNumber);
+        request.queryParam("active").filter(StringUtils::hasText).map(Integer::parseInt).ifPresent(query::setActive);
+        return query;
     }
 
 }

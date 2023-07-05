@@ -1,17 +1,20 @@
 package com.estar.marketing.admin.model.request;
 
+import lombok.Data;
+
 /**
  * @author xiaowenrou
  * @data 2022/8/10
  */
-public record LogListRequest(
+@Data
+public class LogListRequest {
 
-        String account,
+    private String account;
 
-        Integer organizationId,
+    private Integer organizationId;
 
-        String startTime,
+    private String startTime;
 
-        String endTime
+    private String endTime;
 
-) {}
+}

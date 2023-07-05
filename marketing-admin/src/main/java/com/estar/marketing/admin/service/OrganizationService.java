@@ -8,7 +8,6 @@ import com.estar.marketing.admin.model.response.OrganizationListResponse;
 import com.estar.marketing.base.model.PullModel;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.*;
-import org.springframework.data.r2dbc.core.R2dbcEntityOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -25,8 +24,6 @@ public class OrganizationService {
     private final AccountRepository accountRepository;
 
     private final OrganizationRepository organizationRepository;
-
-    private R2dbcEntityOperations r2dbcEntityOperations;
 
     @Transactional(rollbackFor = {Exception.class})
     public Mono<Integer> saveOrganization(Mono<OrganizationSaveRequest> requestMono) {

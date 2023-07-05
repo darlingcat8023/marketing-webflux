@@ -52,8 +52,8 @@ public class GlobalErrorWebExceptionHandler extends AbstractErrorWebExceptionHan
         HandlerFunction<ServerResponse> handlerFunction = request -> {
             final var error = errorAttributes.getError(request);
             Supplier<String> supplier = () -> {
-                log.error("未知异常", error);
-                return error.getMessage();
+                log.error("服务异常", error);
+                return "服务异常";
             };
             return this.handlers.stream().filter(handler -> handler.canHandle(error))
                     .map(handler -> handler.handle(error)).findFirst()

@@ -32,12 +32,14 @@ public abstract class TokenStrategy {
      * @param source
      * @return
      */
-    public static TokenStrategy create(ApplicationContext context, Integer source) {
+    public static TokenStrategy create(ApplicationContext context, String source) {
         return switch (source) {
-            case 1 -> context.getBean(HongHeTokenStrategy.class);
-            case 2 -> context.getBean(HuaYaoStrategy.class);
-            case 3 -> context.getBean(DongFangStrategy.class);
-            case 4 -> context.getBean(RenMinStrategy.class);
+            case "hh" -> context.getBean(HongHeTokenStrategy.class);
+            case "2" -> context.getBean(HuaYaoStrategy.class);
+            case "dfs" -> context.getBean(DongFangStrategy.class);
+            case "rmzk" -> context.getBean(RenMinStrategy.class);
+            case "jq" -> context.getBean(JQStrategy.class);
+            case "wzkj" -> context.getBean(WenZhiStrategy.class);
             default -> throw new BusinessException("unknown source");
         };
     }
@@ -189,6 +191,47 @@ public abstract class TokenStrategy {
             return RenMinStrategy.secret.getBytes(UTF_8);
         }
 
+    }
+
+    @Component
+    @AllArgsConstructor
+    public static class JQStrategy extends TokenStrategy {
+
+        @Override
+        public Mono<String> generateToken() {
+            return Mono.error(() -> new BusinessException("no need token gen"));
+        }
+
+        @Override
+        public Mono<Boolean> parseToken(String token) {
+            return Mono.just(true);
+        }
+
+    }
+
+    @Component
+    @AllArgsConstructor
+    public static class WenZhiStrategy extends HuaYaoStrategy {
+        private static final String version = "v1";
+
+        private static final String provider = "WenZhiKeJi";
+
+        private static final String secret = "xibaozi";
+
+        @Override
+        protected String getVersion() {
+            return WenZhiStrategy.version;
+        }
+
+        @Override
+        protected String getProvider() {
+            return WenZhiStrategy.provider;
+        }
+
+        @Override
+        protected byte[] getSecretBytes() {
+            return WenZhiStrategy.secret.getBytes(UTF_8);
+        }
     }
 
 }

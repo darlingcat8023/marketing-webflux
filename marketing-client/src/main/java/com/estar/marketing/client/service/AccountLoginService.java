@@ -2,10 +2,12 @@ package com.estar.marketing.client.service;
 
 import com.estar.marketing.admin.dao.AccountRepository;
 import com.estar.marketing.admin.dao.LogRepository;
+import com.estar.marketing.admin.dao.entity.AccountEntity;
 import com.estar.marketing.admin.dao.entity.LoginLogEntity;
 import com.estar.marketing.base.exception.BusinessException;
 import com.estar.marketing.client.model.request.ClientCheckRequest;
 import com.estar.marketing.client.model.request.AccountLoginRequest;
+import com.estar.marketing.client.model.request.MobileLoginRequest;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.AllArgsConstructor;
@@ -52,8 +54,7 @@ public class AccountLoginService {
                     } else {
                         return this.logRepository.save(logEntity);
                     }
-                })
-                .map(entity -> this.generateClientToken(request.account(), request.password(), request.deviceId()))
+                }).map(entity -> this.generateClientToken(request.account(), request.password(), request.deviceId()))
         );
     }
 
@@ -79,7 +80,7 @@ public class AccountLoginService {
                                 }
                             }
                         })
-                ).map(entity -> "success");
+                ).thenReturn("success");
     }
 
     private AccountLoginRequest parseClientToken(ClientCheckRequest request) {
@@ -95,6 +96,21 @@ public class AccountLoginService {
         } catch (Exception e) {
             throw new BusinessException("token解析失败");
         }
+    }
+
+    public Mono<String> mobileLogin(Mono<MobileLoginRequest> requestMono) {
+        return requestMono.flatMap(request -> this.accountRepository.findByMobileAndPassword(request.mobile(), request.password()))
+                .switchIfEmpty(Mono.error(() -> new BusinessException("用户名或密码错误")))
+                .doOnNext(entity -> {
+                    if (entity.active().equals(1)) {
+                        throw new BusinessException("账户已停用");
+                    }
+                }).thenReturn("success");
+    }
+
+    public Mono<Boolean> checkAccess(String mobile, int index) {
+        return this.accountRepository.findByMobile(mobile).switchIfEmpty(Mono.error(() -> new BusinessException("用户不存在"))).map(AccountEntity::access)
+                .map(access -> access.charAt(index - 1) == '1');
     }
 
 }

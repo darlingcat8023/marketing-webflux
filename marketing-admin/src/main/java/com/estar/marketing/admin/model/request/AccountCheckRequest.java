@@ -15,6 +15,6 @@ public record AccountCheckRequest(
         String account
 ) {
         public AccountEntity convertEntity() {
-                return new AccountEntity(null, null, null,null, this.account(), null,null,null,null, null, null,null,null,null,null);
+                return new AccountEntity(null, null, null,null, this.account(),null,null,null,null,null, null, null,null,null,null,null, null, null);
         }
 }

@@ -24,14 +24,12 @@ public class TokenVerifyHandler {
     private final TokenVerifyService tokenVerifyService;
 
     public Mono<ServerResponse> generateToken(ServerRequest request) {
-        var source = request.queryParam("source").map(Integer::parseInt)
-                .orElseThrow(() -> new BusinessException("unknown source"));
+        var source = request.queryParam("source").orElseThrow(() -> new BusinessException("unknown source"));
         return ServerResponse.ok().body(this.tokenVerifyService.generate(source), String.class);
     }
 
     public Mono<ServerResponse> verifyToken(ServerRequest request) {
-        var source = request.queryParam("source").map(Integer::parseInt)
-                .orElseThrow(() -> new BusinessException("unknown source"));
+        var source = request.queryParam("source").orElseThrow(() -> new BusinessException("unknown source"));
         var token = request.queryParam("token").filter(StringUtils::hasText)
                 .orElseThrow(() -> new BusinessException("unknown token"));
         var ret = this.tokenVerifyService.verify(new TokenVerifyRequest(source, token), RequestUtils.getActualAddress(request));

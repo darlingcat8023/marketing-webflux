@@ -22,7 +22,7 @@ public record TokenVerifyEntity(
         @ReadOnlyProperty
         Timestamp updatedAt,
 
-        Integer source,
+        String source,
 
         String token,
 
