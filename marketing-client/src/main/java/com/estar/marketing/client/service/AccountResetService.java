@@ -37,14 +37,19 @@ public class AccountResetService {
 
     public Mono<String> sendResetVerificationCode(String mobile) {
         return this.accountRepository.findByMobile(mobile).switchIfEmpty(Mono.error(() -> new BusinessException("手机号不存在")))
-                .flatMap(entity -> Mono.justOrEmpty(this.verificationCache.getIfPresent(mobile))).flatMap(cache -> Mono.error(() -> new BusinessException("请勿重复发送")))
-                .switchIfEmpty(Mono.defer(() -> this.smsRequest(mobile)).doOnNext(code -> this.verificationCache.put(mobile, code))).thenReturn("success");
+                .flatMap(entity -> Mono.justOrEmpty(this.verificationCache.getIfPresent(mobile)))
+                .flatMap(cache -> Mono.error(() -> new BusinessException("请勿重复发送")))
+                .switchIfEmpty(this.smsRequest(mobile).flatMap(code -> {
+                    this.verificationCache.put(mobile, code);
+                    return Mono.empty();
+                })).thenReturn("success");
     }
 
-    public Mono<String> commitVerificationCode(Mono<CommitCodeRequest> requestMono) {
-        return requestMono.flatMap(req -> Mono.justOrEmpty(this.verificationCache.getIfPresent(req.mobile()))
-                .switchIfEmpty(Mono.error(() -> new BusinessException("验证码失效"))).filter(req.code()::equals).switchIfEmpty(Mono.error(() -> new BusinessException("验证码错误")))
-                .flatMap(code -> this.accountRepository.resetAccountByMobile(req.mobile(), req.password())).doOnSuccess(i -> this.verificationCache.invalidate(req.mobile()))).thenReturn("success");
+    public Mono<String> commitVerificationCode(CommitCodeRequest request) {
+        return Mono.justOrEmpty(this.verificationCache.getIfPresent(request.mobile())).switchIfEmpty(Mono.error(() -> new BusinessException("验证码失效")))
+                .filter(request.code()::equals).switchIfEmpty(Mono.error(() -> new BusinessException("验证码错误")))
+                .flatMap(code -> this.accountRepository.resetAccountByMobile(request.mobile(), request.password()))
+                .doOnSuccess(i -> this.verificationCache.invalidate(request.mobile())).thenReturn("success");
     }
 
     private Mono<String> smsRequest(String mobile) {

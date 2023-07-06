@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Validator;
+import java.util.function.Function;
 
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -38,38 +39,40 @@ public class AccountHandler {
     private final AccountService accountService;
 
     public Mono<ServerResponse> check(ServerRequest request) {
-        var requestMono = request.bodyToMono(AccountCheckRequest.class).log()
-                .doOnNext(req -> ValidatorUtils.valid(this.validator, req));
-        return ServerResponse.ok().body(requestMono.flatMap(this.accountService::checkAccount), Boolean.class);
+        return request.bodyToMono(AccountCheckRequest.class).log().doOnNext(req -> ValidatorUtils.valid(this.validator, req))
+                .flatMap(this.accountService::checkAccount)
+                .as(mono -> ServerResponse.ok().body(mono, Boolean.class));
     }
 
     public Mono<ServerResponse> save(ServerRequest request) {
-        var requestMono = request.bodyToMono(AccountSaveRequest.class).log()
-                .doOnNext(req -> ValidatorUtils.valid(this.validator, req));
-        return ServerResponse.ok().body(requestMono.flatMap(this.accountService::saveAccount), Integer.class);
+        return request.bodyToMono(AccountSaveRequest.class).log().doOnNext(req -> ValidatorUtils.valid(this.validator, req))
+                .flatMap(this.accountService::saveAccount)
+                .as(mono -> ServerResponse.ok().body(mono.then(Mono.just("success")), Integer.class));
     }
 
     public Mono<ServerResponse> importFile(ServerRequest request) {
-        var requestMono = request.multipartData().mapNotNull(map -> map.getFirst("file")).cast(FilePart.class);
-        return ServerResponse.ok().body(requestMono.flatMap(this.accountService::importAccount), String.class);
+        return request.multipartData().mapNotNull(map -> map.getFirst("file")).cast(FilePart.class)
+                .flatMap(this.accountService::importAccount)
+                .as(mono -> ServerResponse.ok().body(mono, String.class));
     }
 
     public Mono<ServerResponse> list(ServerRequest request) {
         var page = request.queryParam("page").map(Integer::parseInt).orElse(1);
-        var ret = this.accountService.pageAccount(this.buildRequestModel(request), PageRequest.of(page - 1, 10));
-        return ServerResponse.ok().body(ret, new ParameterizedTypeReference<>() {});
+        return this.accountService.pageAccount(this.buildRequestModel(request), PageRequest.of(page - 1, 10))
+                .as(flux -> ServerResponse.ok().body(flux, new ParameterizedTypeReference<>() {}));
     }
 
     public Mono<ServerResponse> export(ServerRequest request) {
-        return ServerResponse.ok().header(CONTENT_TYPE, APPLICATION_OCTET_STREAM_VALUE)
+        Function<Mono<Resource>, Mono<ServerResponse>> downloadFunction = mono -> ServerResponse.ok().header(CONTENT_TYPE, APPLICATION_OCTET_STREAM_VALUE)
                 .header(CONTENT_DISPOSITION,  "attachment;filename=" + System.currentTimeMillis() + ".xlsx")
-                .body(this.accountService.exportAccount(this.buildRequestModel(request)), Resource.class);
+                .body(mono, Resource.class);
+        return this.accountService.exportAccount(this.buildRequestModel(request)).as(downloadFunction);
     }
 
     public Mono<ServerResponse> reset(ServerRequest request) {
-        var requestMono = request.bodyToMono(AccountResetRequest.class).log()
-                .doOnNext(req -> ValidatorUtils.valid(this.validator, req));
-        return ServerResponse.ok().body(requestMono.flatMap(this.accountService::resetAccount), Boolean.class);
+        return request.bodyToMono(AccountResetRequest.class).log().doOnNext(req -> ValidatorUtils.valid(this.validator, req))
+                .flatMap(this.accountService::resetAccount)
+                .as(mono -> ServerResponse.ok().body(mono, Boolean.class));
     }
 
     private AccountListRequest buildRequestModel(ServerRequest request){

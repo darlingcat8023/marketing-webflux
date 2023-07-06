@@ -1,11 +1,15 @@
 import com.estar.marketing.MarketingApplication;
+import com.estar.marketing.admin.dao.AccountRepository;
 import com.estar.marketing.admin.model.request.AccountSaveRequest;
 import com.estar.marketing.admin.service.AccountService;
+import com.estar.marketing.base.exception.BusinessException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import reactor.core.publisher.Mono;
+import reactor.test.publisher.PublisherProbe;
 
 /**
  * @author xiaowenrou
@@ -42,8 +46,16 @@ public class MarketingTest {
                 }
                 """;
         var request = this.objectMapper.readValue(string, AccountSaveRequest.class);
-//        PublisherProbe<Void> probe = PublisherProbe.empty();
+        PublisherProbe<Void> probe = PublisherProbe.empty();
 //        StepVerifier.create(this.accountService.saveAccount(Mono.just(request))).expectErrorMessage("mobile已经存在").verify();
+    }
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Test
+    public void testBatch() {
+        Mono.just(123).flatMap(item -> Mono.error(new BusinessException("1"))).flatMap(item -> Mono.just("234")).subscribe(System.out::println);
     }
 
 }

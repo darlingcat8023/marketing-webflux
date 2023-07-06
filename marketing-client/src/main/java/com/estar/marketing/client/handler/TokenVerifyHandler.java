@@ -25,15 +25,15 @@ public class TokenVerifyHandler {
 
     public Mono<ServerResponse> generateToken(ServerRequest request) {
         var source = request.queryParam("source").orElseThrow(() -> new BusinessException("unknown source"));
-        return ServerResponse.ok().body(this.tokenVerifyService.generate(source), String.class);
+        return this.tokenVerifyService.generate(source).as(mono -> ServerResponse.ok().body(mono, String.class));
     }
 
     public Mono<ServerResponse> verifyToken(ServerRequest request) {
         var source = request.queryParam("source").orElseThrow(() -> new BusinessException("unknown source"));
         var token = request.queryParam("token").filter(StringUtils::hasText)
                 .orElseThrow(() -> new BusinessException("unknown token"));
-        var ret = this.tokenVerifyService.verify(new TokenVerifyRequest(source, token), RequestUtils.getActualAddress(request));
-        return ServerResponse.ok().body(ret, String.class);
+        return this.tokenVerifyService.verify(new TokenVerifyRequest(source, token), RequestUtils.getActualAddress(request))
+                .as(mono -> ServerResponse.ok().body(mono, String.class));
     }
 
 }

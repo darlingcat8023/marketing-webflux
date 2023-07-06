@@ -9,8 +9,15 @@ import lombok.Getter;
 @Getter
 public class BusinessException extends RuntimeException {
 
+    private Object blamedObject;
+
     public BusinessException(String message) {
         super(message);
+    }
+
+    public BusinessException(String message, Object blamedObject) {
+        super(message);
+        this.blamedObject = blamedObject;
     }
 
     public BusinessException(String message, Throwable throwable) {

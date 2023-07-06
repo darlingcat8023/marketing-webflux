@@ -1,10 +1,14 @@
 package com.estar.marketing.admin.dao;
 
 import com.estar.marketing.admin.dao.entity.AccountEntity;
+import com.estar.marketing.admin.dao.entity.projection.AccountProjection;
 import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Collection;
 
 /**
  * @author xiaowenrou
@@ -19,6 +23,11 @@ public interface AccountRepository extends R2dbcRepository<AccountEntity, Intege
      */
     Mono<AccountEntity> findByAccount(String account);
 
+    /**
+     * 跟据手机号查找
+     * @param mobile
+     * @return
+     */
     Mono<AccountEntity> findByMobile(String mobile);
 
     /**
@@ -36,6 +45,13 @@ public interface AccountRepository extends R2dbcRepository<AccountEntity, Intege
      * @return
      */
     Mono<AccountEntity> findByMobileAndPassword(String mobile, String password);
+
+    /**
+     * 差找重复的account
+     * @param accounts
+     * @return
+     */
+    Flux<AccountProjection> findByAccountIn(Collection<String> accounts);
 
     /**
      * 重置密码

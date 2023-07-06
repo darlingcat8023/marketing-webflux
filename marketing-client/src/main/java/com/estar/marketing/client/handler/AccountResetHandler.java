@@ -27,13 +27,14 @@ public class AccountResetHandler {
 
     public Mono<ServerResponse> sendVerificationCode(ServerRequest request) {
         var mobile = request.queryParam("mobile").filter(StringUtils::hasText).orElseThrow(() -> new BusinessException("mobile null"));
-        return ServerResponse.ok().body(this.accountResetService.sendResetVerificationCode(mobile), String.class);
+        return this.accountResetService.sendResetVerificationCode(mobile)
+                .as(mono -> ServerResponse.ok().body(mono, String.class));
     }
 
     public Mono<ServerResponse> commitVerificationCode(ServerRequest request) {
-        var requestMono = request.bodyToMono(CommitCodeRequest.class)
-                .doOnNext(req -> ValidatorUtils.valid(this.validator, req));
-        return ServerResponse.ok().body(this.accountResetService.commitVerificationCode(requestMono), String.class);
+        return request.bodyToMono(CommitCodeRequest.class).doOnNext(req -> ValidatorUtils.valid(this.validator, req))
+                .flatMap(this.accountResetService::commitVerificationCode)
+                .as(mono -> ServerResponse.ok().body(mono, String.class));
     }
 
 }

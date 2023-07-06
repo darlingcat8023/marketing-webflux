@@ -23,12 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -46,25 +46,38 @@ public class AccountService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public Mono<Integer> saveAccount(AccountSaveRequest request) {
+    public Mono<AccountEntity> saveAccount(AccountSaveRequest request) {
         var ent = request.convertEntity();
-        var accountCheck = this.accountRepository.findByAccount(ent.account()).flatMap(model -> ent.id() == null || !model.id().equals(ent.id()) ? Mono.error(() -> new BusinessException("account exists: " + model.account())) : Mono.empty());
+        var accountCheck = this.accountRepository.findByAccount(ent.account()).flatMap(model -> ent.id() == null || !model.id().equals(ent.id()) ? Mono.error(() -> new BusinessException("account exists: " + model.account(), model)) : Mono.empty());
         var mobileCheck = Mono.empty();
         if (StringUtils.hasText(ent.mobile())) {
-            mobileCheck = this.accountRepository.findByMobile(ent.mobile()).flatMap(model -> ent.id() == null || !model.id().equals(ent.id()) ? Mono.error(() -> new BusinessException("mobile exists: " + model.mobile())) : Mono.empty());
+            mobileCheck = this.accountRepository.findByMobile(ent.mobile()).flatMap(model -> ent.id() == null || !model.id().equals(ent.id()) ? Mono.error(() -> new BusinessException("mobile exists: " + model.mobile(), model)) : Mono.empty());
         }
-        return accountCheck.then(mobileCheck).then(this.accountRepository.save(ent)).map(AccountEntity::id);
+        return accountCheck.then(mobileCheck).then(this.accountRepository.save(ent));
     }
 
     @Transactional(rollbackFor = {Exception.class})
     public Mono<String> importAccount(FilePart part) {
         Supplier<InputStream> supplier = () -> new InputStream() {
             @Override
-            public int read() throws IOException { return -1;}
+            public int read() { return -1;}
         };
-        return part.content().reduceWith(supplier, (input, buffer) -> new SequenceInputStream(input, buffer.asInputStream()))
-                .flatMapMany(stream -> EasyExcelUtils.read(stream, AccountImportBean.class, 0)).map(AccountImportBean::convert)
-                .flatMap(this::saveAccount).then(Mono.just("success"));
+        return Mono.using(State::new,
+                state -> part.content().reduceWith(supplier, (input, buffer) -> new SequenceInputStream(input, buffer.asInputStream()))
+                        .flatMapMany(stream -> EasyExcelUtils.read(stream, AccountImportBean.class, 0))
+                        .map(AccountImportBean::convert).flatMap(this::saveAccount).onErrorContinue(BusinessException.class, (err, obj) -> {
+                            state.roll = true;
+                            if (err instanceof BusinessException e) {
+                                var ent = ((AccountEntity) e.getBlamedObject());
+                                state.duplicates.add(ent.account());
+                            }
+                        }).then(Mono.just(state)),
+                state -> {}).flatMap(state -> state.roll ? Mono.error(() -> new BusinessException(String.join(",", state.duplicates) + " 以上用户名有重复")) : Mono.just("success"));
+    }
+
+    static class State {
+        boolean roll = false;
+        List<String> duplicates = new ArrayList<>();
     }
 
     public Mono<Page<AccountListResponse>> pageAccount(AccountListRequest query, Pageable pageable) {
