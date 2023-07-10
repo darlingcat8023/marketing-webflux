@@ -111,10 +111,11 @@ Content-Type: application/json
 
 ###
 
+// @no-log
 GET http://togqmwqkht.goelfin.com/api/client/reset/send?mobile=18643921237
 
 ###
-
+// @no-log
 POST http://togqmwqkht.goelfin.com/api/client/reset/commit
 Content-Type: application/json
 
@@ -126,6 +127,7 @@ Content-Type: application/json
 
 ###
 
+// @no-log
 POST http://127.0.0.1:9000/api/admin/account/import
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 token: eyJhbGciOiJIUzI1NiJ9.eyJ0aW1lU3RhbXAiOjE2ODg2MjYzNjE0NDQsInVzZXJJZCI6ImFkbWluIiwicGFzc3dvcmQiOiJxbXdxazIwMjIifQ.D331ZmAGjVd5szt_-UHE046ThinWHKsC4HkS1WGHtOI
@@ -137,3 +139,11 @@ Content-Type: application/octet-stream
 < /Users/xiaowenrou/Downloads/template.xlsx
 --WebAppBoundary--
 
+###
+
+// @no-log
+POST http://127.0.0.1:9000/api/admin/account/batchDisable
+Content-Type: application/json
+token: eyJhbGciOiJIUzI1NiJ9.eyJ0aW1lU3RhbXAiOjE2ODg5NzEyNTQ4MTYsInVzZXJJZCI6ImFkbWluIiwicGFzc3dvcmQiOiJxbXdxazIwMjIifQ.0BU5JgHi7D52dBj6OpDkpVwMinb6AdO4oTVgkf4PWMU
+
+["21212", "xinyue"]

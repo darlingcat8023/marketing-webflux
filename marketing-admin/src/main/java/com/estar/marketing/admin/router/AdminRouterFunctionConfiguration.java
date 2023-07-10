@@ -21,6 +21,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
@@ -143,7 +144,19 @@ public class AdminRouterFunctionConfiguration {
                                     @ApiResponse(responseCode = "403", description = "forbidden operation", content = @Content(schema = @Schema(implementation = String.class)))
                             }
                     )
-            )
+            ),
+            @RouterOperation(method = POST, path = "/api/admin/account/batchDisable", beanClass = AccountHandler.class, beanMethod = "batchDisable",
+                    operation = @Operation(
+                            operationId = "batchDisableAccount",
+                            description = "批量禁用用户",
+                            requestBody = @RequestBody(required = true, content = @Content(schema = @Schema(implementation = List.class))),
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(schema = @Schema(implementation = Boolean.class))),
+                                    @ApiResponse(responseCode = "400", description = "fail operation", content = @Content(schema = @Schema(implementation = String.class))),
+                                    @ApiResponse(responseCode = "403", description = "forbidden operation", content = @Content(schema = @Schema(implementation = String.class)))
+                            }
+                    )
+            ),
     })
     public RouterFunction<ServerResponse> accountRouterFunction(AccountHandler accountHandle) {
         Supplier<RouterFunction<ServerResponse>> supplier = () -> RouterFunctions.route()
@@ -153,6 +166,7 @@ public class AdminRouterFunctionConfiguration {
                 .GET("/list", accountHandle::list)
                 .GET("/export", accountHandle::export)
                 .POST("/reset", RequestPredicates.contentType(APPLICATION_JSON), accountHandle::reset)
+                .POST("/batchDisable", RequestPredicates.contentType(APPLICATION_JSON), accountHandle::batchDisable)
                 .build();
         return RouterFunctions.route().path("/api/admin/account", supplier).build();
     }

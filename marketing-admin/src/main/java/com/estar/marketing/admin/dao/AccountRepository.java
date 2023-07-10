@@ -93,4 +93,13 @@ public interface AccountRepository extends R2dbcRepository<AccountEntity, Intege
     @Query(value = "UPDATE marketing_account SET device_id = :deviceId, active_time = CURRENT_TIMESTAMP WHERE id = :id")
     Mono<Integer> updateAccountBindInfo(String deviceId, Integer id);
 
+    /**
+     * 批量禁用
+     * @param accounts
+     * @return
+     */
+    @Modifying
+    @Query(value = "UPDATE marketing_account SET active = 1 WHERE account IN (:accounts)")
+    Mono<Integer> batchDisableByAccount(Collection<String> accounts);
+
 }

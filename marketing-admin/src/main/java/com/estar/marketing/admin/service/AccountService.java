@@ -28,6 +28,7 @@ import java.io.SequenceInputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -62,7 +63,8 @@ public class AccountService {
             @Override
             public int read() { return -1;}
         };
-        return Mono.using(State::new,
+        return Mono.using(
+                State::new,
                 state -> part.content().reduceWith(supplier, (input, buffer) -> new SequenceInputStream(input, buffer.asInputStream()))
                         .flatMapMany(stream -> EasyExcelUtils.read(stream, AccountImportBean.class, 0))
                         .map(AccountImportBean::convert).flatMap(this::saveAccount).onErrorContinue(BusinessException.class, (err, obj) -> {
@@ -72,12 +74,8 @@ public class AccountService {
                                 state.duplicates.add(ent.account());
                             }
                         }).then(Mono.just(state)),
-                state -> {}).flatMap(state -> state.roll ? Mono.error(() -> new BusinessException(String.join(",", state.duplicates) + " 以上用户名有重复")) : Mono.just("success"));
-    }
-
-    static class State {
-        boolean roll = false;
-        List<String> duplicates = new ArrayList<>();
+                state -> {})
+                .flatMap(state -> state.roll ? Mono.error(() -> new BusinessException(String.join(",", state.duplicates) + " 以上用户名有重复")) : Mono.just("success"));
     }
 
     public Mono<Page<AccountListResponse>> pageAccount(AccountListRequest query, Pageable pageable) {
@@ -98,6 +96,15 @@ public class AccountService {
 
     public Mono<Boolean> resetAccount(AccountResetRequest request) {
         return this.accountRepository.resetAccount(request.account(), request.password()).map(account -> account.equals(1));
+    }
+
+    public Mono<String> batchDisableAccount(Collection<String> accounts) {
+        return this.accountRepository.batchDisableByAccount(accounts).thenReturn("success");
+    }
+
+    static class State {
+        boolean roll = false;
+        List<String> duplicates = new ArrayList<>();
     }
 
     @Data
