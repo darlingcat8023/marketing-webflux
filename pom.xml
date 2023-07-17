@@ -137,29 +137,4 @@
 
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>nexus</id>
-            <url>http://nexus.prd.estargo.com.cn:8081/repository/maven/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>nexus</id>
-            <url>http://nexus.prd.estargo.com.cn:8081/repository/maven/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </pluginRepository>
-    </pluginRepositories>
-
 </project>
